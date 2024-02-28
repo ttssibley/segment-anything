@@ -119,6 +119,7 @@ class SamAutomaticMaskGenerator:
 
         if min_mask_region_area > 0:
             import cv2  # type: ignore # noqa: F401
+        print("hello")
 
         self.predictor = SamPredictor(model)
         self.points_per_batch = points_per_batch
