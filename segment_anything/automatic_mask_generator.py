@@ -31,7 +31,7 @@ from .utils.amg import (
     uncrop_points,
 )
 
-
+print("Hello")
 class SamAutomaticMaskGenerator:
     def __init__(
         self,
@@ -119,7 +119,6 @@ class SamAutomaticMaskGenerator:
 
         if min_mask_region_area > 0:
             import cv2  # type: ignore # noqa: F401
-        print("hello")
 
         self.predictor = SamPredictor(model)
         self.points_per_batch = points_per_batch
@@ -164,7 +163,6 @@ class SamAutomaticMaskGenerator:
         mask_data = self._generate_masks(image)
 
         # Filter small disconnected regions and holes in masks
-        print("Hello")
         if self.min_mask_region_area > 0:
             mask_data = self.postprocess_small_regions(
                 mask_data,
@@ -173,6 +171,8 @@ class SamAutomaticMaskGenerator:
             )
 
         # Encode masks
+        print("Hello")
+
         if self.output_mode == "coco_rle":
             mask_data["segmentations"] = [coco_encode_rle(rle) for rle in mask_data["rles"]]
         elif self.output_mode == "binary_mask":
@@ -329,7 +329,7 @@ class SamAutomaticMaskGenerator:
     ) -> MaskData:
         """
         Removes small disconnected regions and holes in masks, then reruns
-        box NMS to remove any new duplicates.
+        box NMS to remove any new duplicates.ln
 
         Edits mask_data in place.
 
