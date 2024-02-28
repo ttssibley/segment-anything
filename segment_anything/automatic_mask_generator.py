@@ -163,6 +163,7 @@ class SamAutomaticMaskGenerator:
         mask_data = self._generate_masks(image)
 
         # Filter small disconnected regions and holes in masks
+        print("Hello")
         if self.min_mask_region_area > 0:
             mask_data = self.postprocess_small_regions(
                 mask_data,
@@ -273,6 +274,7 @@ class SamAutomaticMaskGenerator:
         orig_h, orig_w = orig_size
 
         # Run model on this batch
+        print(len(points), points[0])
         transformed_points = self.predictor.transform.apply_coords(points, im_size)
         in_points = torch.as_tensor(transformed_points, device=self.predictor.device)
         in_labels = torch.ones(in_points.shape[0], dtype=torch.int, device=in_points.device)
