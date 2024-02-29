@@ -132,9 +132,7 @@ class SamAutomaticMaskGenerator:
         self.crop_n_points_downscale_factor = crop_n_points_downscale_factor
         self.min_mask_region_area = min_mask_region_area
         self.output_mode = output_mode
-        #print("WORKINGWORKINGWORKING")
-        #print(len(self.point_grids)
-        #print(self.point_grids)
+        print(self.point_grids)
 
     @torch.no_grad()
     def generate(self, image: np.ndarray) -> List[Dict[str, Any]]:
@@ -243,7 +241,8 @@ class SamAutomaticMaskGenerator:
         # Get points for this crop
         points_scale = np.array(cropped_im_size)[None, ::-1]
         points_for_image = self.point_grids[crop_layer_idx] * points_scale
-        
+        print(points_for_image)
+        print(self.point_grids[crop_layer_idx])
 
         # Generate masks for this crop in batches
         data = MaskData()
@@ -278,8 +277,12 @@ class SamAutomaticMaskGenerator:
     ) -> MaskData:
         orig_h, orig_w = orig_size
 
+        num_points = self.points_per_batch
+        points = np.random.rand(num_points, 2)  # Random points in [0, 1] range
+        points *= np.array(im_size[::-1])[None, :]  # Scale points to image size
         # Run model on this batch
         #print(len(points), points[0])
+        
         transformed_points = self.predictor.transform.apply_coords(points, im_size)
         in_points = torch.as_tensor(transformed_points, device=self.predictor.device)
         in_labels = torch.ones(in_points.shape[0], dtype=torch.int, device=in_points.device)
