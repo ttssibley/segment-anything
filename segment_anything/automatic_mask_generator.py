@@ -132,6 +132,7 @@ class SamAutomaticMaskGenerator:
         self.crop_n_points_downscale_factor = crop_n_points_downscale_factor
         self.min_mask_region_area = min_mask_region_area
         self.output_mode = output_mode
+        print(len(self.point_grids)
         print(self.point_grids)
 
     @torch.no_grad()
@@ -241,8 +242,7 @@ class SamAutomaticMaskGenerator:
         # Get points for this crop
         points_scale = np.array(cropped_im_size)[None, ::-1]
         points_for_image = self.point_grids[crop_layer_idx] * points_scale
-        print(points_for_image)
-        print(self.point_grids[crop_layer_idx])
+        
 
         # Generate masks for this crop in batches
         data = MaskData()
