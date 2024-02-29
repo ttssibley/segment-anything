@@ -9,7 +9,7 @@ import torch
 from torchvision.ops.boxes import batched_nms, box_area  # type: ignore
 
 from typing import Any, Dict, List, Optional, Tuple
-
+print("HEllo")
 from .modeling import Sam
 from .predictor import SamPredictor
 from .utils.amg import (
