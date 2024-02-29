@@ -132,6 +132,7 @@ class SamAutomaticMaskGenerator:
         self.crop_n_points_downscale_factor = crop_n_points_downscale_factor
         self.min_mask_region_area = min_mask_region_area
         self.output_mode = output_mode
+        print("WORKINGWORKINGWORKING")
         print(len(self.point_grids)
         print(self.point_grids)
 
