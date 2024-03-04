@@ -9,7 +9,7 @@ import torch
 from torchvision.ops.boxes import batched_nms, box_area  # type: ignore
 
 from typing import Any, Dict, List, Optional, Tuple
-print("new")
+print("neew")
 from .modeling import Sam
 from .predictor import SamPredictor
 from .utils.amg import (
@@ -278,7 +278,7 @@ class SamAutomaticMaskGenerator:
     ) -> MaskData:
         orig_h, orig_w = orig_size
 
-        if randpoints==True:
+        if self.randpoints==True:
             num_points = self.points_per_batch
             points = np.random.rand(num_points, 2)  # Random points in [0, 1] range
             points *= np.array(im_size[::-1])[None, :]  # Scale points to image size
