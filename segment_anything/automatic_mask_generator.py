@@ -9,7 +9,7 @@ import torch
 from torchvision.ops.boxes import batched_nms, box_area  # type: ignore
 
 from typing import Any, Dict, List, Optional, Tuple
-print("neweed")
+print("new")
 from .modeling import Sam
 from .predictor import SamPredictor
 from .utils.amg import (
@@ -47,8 +47,8 @@ class SamAutomaticMaskGenerator:
         crop_overlap_ratio: float = 512 / 1500,
         crop_n_points_downscale_factor: int = 1,
         point_grids: Optional[List[np.ndarray]] = None,
-        randpoints=False,
         min_mask_region_area: int = 0,
+        randpoints=False,
         output_mode: str = "binary_mask",
     ) -> None:
         """
@@ -133,9 +133,8 @@ class SamAutomaticMaskGenerator:
         self.crop_n_points_downscale_factor = crop_n_points_downscale_factor
         self.min_mask_region_area = min_mask_region_area
         self.output_mode = output_mode
-        self.randpoints = randpoints
-        self.transformed_points_list=[]
-        print(self.point_grids)
+        self.transformed_points = []
+        #print(self.point_grids)
 
     @torch.no_grad()
     def generate(self, image: np.ndarray) -> List[Dict[str, Any]]:
@@ -164,7 +163,7 @@ class SamAutomaticMaskGenerator:
         """
 
         # Generate masks
-        mask_data, transformed_points_list = self._generate_masks(image)
+        mask_data = self._generate_masks(image)
 
         # Filter small disconnected regions and holes in masks
         if self.min_mask_region_area > 0:
@@ -198,7 +197,7 @@ class SamAutomaticMaskGenerator:
             }
             curr_anns.append(ann)
 
-        return curr_anns, tranformed_points_list
+        return curr_anns
 
     def _generate_masks(self, image: np.ndarray) -> MaskData:
         orig_size = image.shape[:2]
@@ -208,11 +207,9 @@ class SamAutomaticMaskGenerator:
 
         # Iterate over image crops
         data = MaskData()
-        transformed_point_list=[]
         for crop_box, layer_idx in zip(crop_boxes, layer_idxs): #check crop_boxes
-            crop_data, transformed_points = self._process_crop(image, crop_box, layer_idx, orig_size)
+            crop_data = self._process_crop(image, crop_box, layer_idx, orig_size)
             data.cat(crop_data)
-            transformed_points_list.extend(transformed_points)
 
         # Remove duplicate masks between crops
         if len(crop_boxes) > 1:
@@ -228,7 +225,7 @@ class SamAutomaticMaskGenerator:
             data.filter(keep_by_nms)
 
         data.to_numpy()
-        return data, transformed_points_list
+        return data
 
     def _process_crop(
         self,
@@ -246,16 +243,13 @@ class SamAutomaticMaskGenerator:
         # Get points for this crop
         points_scale = np.array(cropped_im_size)[None, ::-1]
         points_for_image = self.point_grids[crop_layer_idx] * points_scale
-        #print(points_for_image)
-        #print(self.point_grids[crop_layer_idx])
+        
 
         # Generate masks for this crop in batches
         data = MaskData()
-        transformed_points_list=[]
         for (points,) in batch_iterator(self.points_per_batch, points_for_image):
-            batch_data, transformed_points_batch = self._process_batch(points, cropped_im_size, crop_box, orig_size)
+            batch_data = self._process_batch(points, cropped_im_size, crop_box, orig_size)
             data.cat(batch_data)
-            transformed_points_list.extend(transformed_points_batch)
             del batch_data
         self.predictor.reset_image()
 
@@ -273,7 +267,7 @@ class SamAutomaticMaskGenerator:
         data["points"] = uncrop_points(data["points"], crop_box)
         data["crop_boxes"] = torch.tensor([crop_box for _ in range(len(data["rles"]))])
 
-        return data, transformed_points_list
+        return data
 
     def _process_batch(
         self,
@@ -284,10 +278,13 @@ class SamAutomaticMaskGenerator:
     ) -> MaskData:
         orig_h, orig_w = orig_size
 
-        if self.randpoints==True:
+        if randpoints==True:
             num_points = self.points_per_batch
             points = np.random.rand(num_points, 2)  # Random points in [0, 1] range
             points *= np.array(im_size[::-1])[None, :]  # Scale points to image size
+            # Run model on this batch
+            #print(len(points), points[0])
+            #print("POST", points)
         
         transformed_points = self.predictor.transform.apply_coords(points, im_size)
         in_points = torch.as_tensor(transformed_points, device=self.predictor.device)
@@ -298,7 +295,7 @@ class SamAutomaticMaskGenerator:
             multimask_output=True,
             return_logits=True,
         )
-
+        self.transformed_points.extend(transformed_points.tolist())
         # Serialize predictions and store in MaskData
         data = MaskData(
             masks=masks.flatten(0, 1),
@@ -334,7 +331,7 @@ class SamAutomaticMaskGenerator:
         data["rles"] = mask_to_rle_pytorch(data["masks"])
         del data["masks"]
 
-        return data, transformed_points_batch
+        return data
 
     @staticmethod
     def postprocess_small_regions(
@@ -385,4 +382,4 @@ class SamAutomaticMaskGenerator:
                 mask_data["boxes"][i_mask] = boxes[i_mask]  # update res directly
         mask_data.filter(keep_by_nms)
 
-        return mask_data, transformed_points #might need to get rid of this one
+        return mask_data
