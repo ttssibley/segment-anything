@@ -48,7 +48,7 @@ class SamAutomaticMaskGenerator:
         crop_n_points_downscale_factor: int = 1,
         point_grids: Optional[List[np.ndarray]] = None,
         min_mask_region_area: int = 0,
-        randpoints=False,
+        randpoints=True,
         output_mode: str = "binary_mask",
     ) -> None:
         """
@@ -134,6 +134,7 @@ class SamAutomaticMaskGenerator:
         self.min_mask_region_area = min_mask_region_area
         self.output_mode = output_mode
         self.transformed_points = []
+        self.randpoints=randpoints
         #print(self.point_grids)
 
     @torch.no_grad()
