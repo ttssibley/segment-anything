@@ -47,6 +47,7 @@ class SamAutomaticMaskGenerator:
         crop_overlap_ratio: float = 512 / 1500,
         crop_n_points_downscale_factor: int = 1,
         point_grids: Optional[List[np.ndarray]] = None,
+        randpoints=False,
         min_mask_region_area: int = 0,
         output_mode: str = "binary_mask",
     ) -> None:
@@ -277,13 +278,10 @@ class SamAutomaticMaskGenerator:
     ) -> MaskData:
         orig_h, orig_w = orig_size
 
-        #print("PRIOR", points)
-        num_points = self.points_per_batch
-        points = np.random.rand(num_points, 2)  # Random points in [0, 1] range
-        points *= np.array(im_size[::-1])[None, :]  # Scale points to image size
-        # Run model on this batch
-        #print(len(points), points[0])
-        #print("POST", points)
+        if self.randpoints==True:
+            num_points = self.points_per_batch
+            points = np.random.rand(num_points, 2)  # Random points in [0, 1] range
+            points *= np.array(im_size[::-1])[None, :]  # Scale points to image size
         
         transformed_points = self.predictor.transform.apply_coords(points, im_size)
         in_points = torch.as_tensor(transformed_points, device=self.predictor.device)
