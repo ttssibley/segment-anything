@@ -9,7 +9,7 @@ import torch
 from torchvision.ops.boxes import batched_nms, box_area  # type: ignore
 
 from typing import Any, Dict, List, Optional, Tuple
-print("newed")
+print("neweed")
 from .modeling import Sam
 from .predictor import SamPredictor
 from .utils.amg import (
@@ -133,6 +133,7 @@ class SamAutomaticMaskGenerator:
         self.crop_n_points_downscale_factor = crop_n_points_downscale_factor
         self.min_mask_region_area = min_mask_region_area
         self.output_mode = output_mode
+        self.randpoints = randpoints
         print(self.point_grids)
 
     @torch.no_grad()
